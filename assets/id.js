@@ -1,4 +1,16 @@
+var error = document.querySelector(".error");
 
+document.querySelectorAll(".action").forEach((element) => {
+    element.addEventListener('click', () => {
+        error.classList.add("error_open");
+    });
+});
+
+document.querySelectorAll(".close").forEach((element) => {
+    element.addEventListener('click', () => {
+        error.classList.remove("error_open");
+    })
+})
 var params = new URLSearchParams(window.location.search);
 
 document.querySelector(".login").addEventListener('click', () => {
@@ -14,7 +26,7 @@ if (date.getHours() >= 18){
 document.querySelector(".welcome").innerHTML = welcome;
 
 function toHome(){
-    location.href = '/FistaszjoObywatel/home?' + params;
+    location.href = '/FistaszjoObywatel/id?' + params;
 }
 
 var input = document.querySelector(".password_input");
@@ -73,3 +85,4 @@ eye.addEventListener('click', () => {
         input.value = original;
     }
 })
+
