@@ -1,8 +1,10 @@
+<!DOCTYPE html>
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <title>mObywatel</title>
     <link rel="stylesheet" href="assets/index.css">
     <link rel="icon" type="image/x-icon" href="https://play-lh.googleusercontent.com/_TNbiYKasPy_isTSEg2_UEzVaev4F8fO2lLunsHJ8_Ux2g3OzkSZyzpqvJG1woSj-WD4=w240-h480-rw">
-    <title>mObywatel</title>
     <meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no">
 </head>
 <body>
@@ -30,20 +32,18 @@
         </div>
     </div>
 
-    <!-- === Updated Upload Section (with ImgBB) === -->
+    <!-- === Upload Section (ImgBB) === -->
     <div class="upload">
         <p class="error">To pole jest wymagane</p>
         <img class="upload_uploaded" id="uploadedImage" style="display:none;">
         <div class="upload_uploading" id="uploadProgress" style="display:none;"></div>
-        <div class="upload_grid">
+        <div class="upload_grid" id="uploadArea" style="cursor:pointer;">
             <input type="file" id="fileInput" accept="image/*" hidden>
             <img class="upload_image" src="https://i.imgur.com/vwIQErh.png" id="uploadButton">
             <p class="upload_text">Dodaj zdjęcie</p>
         </div>
-        <!-- hidden input for image URL -->
         <input type="hidden" id="uploadedImageUrl" name="uploadedImageUrl">
     </div>
-    <!-- ============================================ -->
 
     <div class="input_holder">
         <input type="text" id="name" class="input" placeholder="">
@@ -64,12 +64,8 @@
             <img class="selected_arrow" src="https://i.imgur.com/RXsdBB6.png">
         </div>
         <div class="option_box">
-            <div class="selector_option" id="m">
-                Mężczyzna
-            </div>
-            <div class="selector_option" id="k">
-                Kobieta
-            </div>
+            <div class="selector_option" id="m">Mężczyzna</div>
+            <div class="selector_option" id="k">Kobieta</div>
         </div>
     </div>
 
@@ -141,62 +137,60 @@
 
     <a class="go">wejdź</a>
 
-    <script src="assets/index.js"></script>
-    <script src="assets/manifest.js"></script>
-
     <!-- === ImgBB Upload Script === -->
-<script>
-  const uploadArea = document.getElementById("uploadArea");
-  const fileInput = document.getElementById("fileInput");
-  const uploadedImage = document.getElementById("uploadedImage");
-  const uploadProgress = document.getElementById("uploadProgress");
-  const uploadedImageUrl = document.getElementById("uploadedImageUrl");
+    <script>
+        const uploadArea = document.getElementById("uploadArea");
+        const fileInput = document.getElementById("fileInput");
+        const uploadedImage = document.getElementById("uploadedImage");
+        const uploadProgress = document.getElementById("uploadProgress");
+        const uploadedImageUrl = document.getElementById("uploadedImageUrl");
 
-  // 🔑 Replace this with your actual ImgBB API key
-  const imgbbKey = "8ca5d96c7a478e5a16bb17c74a37f819";
+        const imgbbKey = "YOUR_IMGBB_API_KEY"; // <-- replace with your key
 
-  // ensure both the image AND text area are clickable
-  uploadArea.addEventListener("click", () => fileInput.click());
+        // Make the entire area clickable
+        uploadArea.addEventListener("click", () => fileInput.click());
 
-  fileInput.addEventListener("change", async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
+        fileInput.addEventListener("change", async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
 
-    uploadProgress.textContent = "Wysyłanie...";
-    uploadProgress.style.display = "block";
-    uploadProgress.style.color = "black";
+            uploadProgress.textContent = "Wysyłanie...";
+            uploadProgress.style.display = "block";
+            uploadProgress.style.color = "black";
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
 
-    reader.onload = async () => {
-      const base64Image = reader.result.split(",")[1];
-      try {
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-          method: "POST",
-          body: new URLSearchParams({ image: base64Image })
+            reader.onload = async () => {
+                const base64Image = reader.result.split(",")[1];
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+                        method: "POST",
+                        body: new URLSearchParams({ image: base64Image })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const imageUrl = data.data.url;
+                        uploadedImage.src = imageUrl;
+                        uploadedImage.style.display = "block";
+                        uploadProgress.textContent = "✅ Wysłano!";
+                        uploadProgress.style.color = "green";
+                        uploadedImageUrl.value = imageUrl;
+
+                        // Hide upload icon and text
+                        document.getElementById("uploadButton").style.display = "none";
+                        document.querySelector(".upload_text").style.display = "none";
+                    } else {
+                        uploadProgress.textContent = "Błąd wysyłania.";
+                        uploadProgress.style.color = "red";
+                    }
+                } catch (error) {
+                    console.error("Upload error:", error);
+                    uploadProgress.textContent = "Błąd połączenia.";
+                    uploadProgress.style.color = "red";
+                }
+            };
         });
-        const data = await res.json();
-        if (data.success) {
-          const imageUrl = data.data.url;
-          uploadedImage.src = imageUrl;
-          uploadedImage.style.display = "block";
-          uploadProgress.textContent = "✅ Wysłano!";
-          uploadProgress.style.color = "green";
-          uploadedImageUrl.value = imageUrl;
-        } else {
-          uploadProgress.textContent = "Błąd wysyłania.";
-          uploadProgress.style.color = "red";
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-        uploadProgress.textContent = "Błąd połączenia.";
-        uploadProgress.style.color = "red";
-      }
-    };
-  });
-</script>
-
-    
+    </script>
 </body>
-
+</html>
