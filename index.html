@@ -139,9 +139,42 @@
         <span class="placeholder">Miasto</span>
         <p class="error">To pole jest wymagane</p>
     </div>
+    <div id="login-section">
+  <input type="password" id="accessKey" placeholder="wpisz kod" />
+  <button id="loginBtn">Login</button>
+  <p id="loginError" style="color: red;"></p>
+
+  <script>
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const key = document.getElementById("accessKey").value.trim();
+      const error = document.getElementById("loginError");
+
+      try {
+        const res = await fetch("/.netlify/functions/verify-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem("authorized", "true");
+          window.location.href = "dashboard.html"; // or your next page
+        } else {
+          error.textContent = "nie dla psa cioto";
+        }
+      } catch (err) {
+        console.error(err);
+        error.textContent = "serwer się wyjebał na ryj.";
+      }
+    });
+  </script>
+</div>
 
     <a class="go">wejdź</a>
 
     <script src="assets/index.js"></script>
     <script src="assets/manifest.js"></script>
 </body>
+
