@@ -36,49 +36,6 @@
     </div>
 </div>
 
-<script>
-const imgbbAPIKey = "8ca5d96c7a478e5a16bb17c74a37f819"; // 🔹 Replace with your actual API key from imgbb.com
-const imageInput = document.getElementById("imageInput");
-const uploadGrid = document.getElementById("uploadGrid");
-const uploadedImage = document.getElementById("uploadedImage");
-const uploadError = document.getElementById("uploadError");
-
-uploadGrid.addEventListener("click", () => {
-    imageInput.click();
-});
-
-imageInput.addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    uploadError.style.display = "none";
-    uploadGrid.querySelector(".upload_text").textContent = "Wysyłanie...";
-
-    try {
-        const formData = new FormData();
-        formData.append("image", file);
-
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            uploadedImage.src = data.data.url;
-            uploadedImage.style.display = "block";
-            uploadGrid.style.display = "none";
-        } else {
-            throw new Error("Nie udało się przesłać obrazu");
-        }
-    } catch (err) {
-        console.error(err);
-        uploadError.textContent = "Błąd podczas przesyłania obrazu";
-        uploadError.style.display = "block";
-        uploadGrid.querySelector(".upload_text").textContent = "Dodaj zdjęcie";
-    }
-});
 
     <div class="input_holder">
         <input type="text" id="name" class="input" placeholder="">
@@ -187,8 +144,52 @@ imageInput.addEventListener("change", async (event) => {
     <div class="upload">
     <p class="error" id="uploadError">To pole jest wymagane</p>
     <img class="upload_uploaded" id="uploadedImage" style="display:none;">
+        <script>
+const imgbbAPIKey = "8ca5d96c7a478e5a16bb17c74a37f819"; // 🔹 Replace with your actual API key from imgbb.com
+const imageInput = document.getElementById("imageInput");
+const uploadGrid = document.getElementById("uploadGrid");
+const uploadedImage = document.getElementById("uploadedImage");
+const uploadError = document.getElementById("uploadError");
+
+uploadGrid.addEventListener("click", () => {
+    imageInput.click();
+});
+
+imageInput.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    uploadError.style.display = "none";
+    uploadGrid.querySelector(".upload_text").textContent = "Wysyłanie...";
+
+    try {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            uploadedImage.src = data.data.url;
+            uploadedImage.style.display = "block";
+            uploadGrid.style.display = "none";
+        } else {
+            throw new Error("Nie udało się przesłać obrazu");
+        }
+    } catch (err) {
+        console.error(err);
+        uploadError.textContent = "Błąd podczas przesyłania obrazu";
+        uploadError.style.display = "block";
+        uploadGrid.querySelector(".upload_text").textContent = "Dodaj zdjęcie";
+    }
+});
     
 
 </script>
 </body>
+
 
