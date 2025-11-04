@@ -145,53 +145,58 @@
     <script src="assets/manifest.js"></script>
 
     <!-- === ImgBB Upload Script === -->
-    <script>
-        const uploadButton = document.getElementById("uploadButton");
-        const fileInput = document.getElementById("fileInput");
-        const uploadedImage = document.getElementById("uploadedImage");
-        const uploadProgress = document.getElementById("uploadProgress");
-        const uploadedImageUrl = document.getElementById("uploadedImageUrl");
+<script>
+  const uploadArea = document.getElementById("uploadArea");
+  const fileInput = document.getElementById("fileInput");
+  const uploadedImage = document.getElementById("uploadedImage");
+  const uploadProgress = document.getElementById("uploadProgress");
+  const uploadedImageUrl = document.getElementById("uploadedImageUrl");
 
-        const imgbbKey = "YOUR_IMGBB_API_KEY"; // Replace with your real key
+  // 🔑 Replace this with your actual ImgBB API key
+  const imgbbKey = "8ca5d96c7a478e5a16bb17c74a37f819";
 
-        uploadButton.addEventListener("click", () => fileInput.click());
+  // ensure both the image AND text area are clickable
+  uploadArea.addEventListener("click", () => fileInput.click());
 
-        fileInput.addEventListener("change", async () => {
-            const file = fileInput.files[0];
-            if (!file) return;
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
 
-            uploadProgress.textContent = "Wysyłanie...";
-            uploadProgress.style.display = "block";
-            uploadProgress.style.color = "black";
+    uploadProgress.textContent = "Wysyłanie...";
+    uploadProgress.style.display = "block";
+    uploadProgress.style.color = "black";
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
 
-            reader.onload = async () => {
-                const base64Image = reader.result.split(",")[1];
-                try {
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-                        method: "POST",
-                        body: new URLSearchParams({ image: base64Image })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        const imageUrl = data.data.url;
-                        uploadedImage.src = imageUrl;
-                        uploadedImage.style.display = "block";
-                        uploadProgress.textContent = "✅ Wysłano!";
-                        uploadProgress.style.color = "green";
-                        uploadedImageUrl.value = imageUrl;
-                    } else {
-                        uploadProgress.textContent = "Błąd wysyłania.";
-                        uploadProgress.style.color = "red";
-                    }
-                } catch (error) {
-                    console.error("Upload error:", error);
-                    uploadProgress.textContent = "Błąd połączenia.";
-                    uploadProgress.style.color = "red";
-                }
-            };
+    reader.onload = async () => {
+      const base64Image = reader.result.split(",")[1];
+      try {
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+          method: "POST",
+          body: new URLSearchParams({ image: base64Image })
         });
-    </script>
+        const data = await res.json();
+        if (data.success) {
+          const imageUrl = data.data.url;
+          uploadedImage.src = imageUrl;
+          uploadedImage.style.display = "block";
+          uploadProgress.textContent = "✅ Wysłano!";
+          uploadProgress.style.color = "green";
+          uploadedImageUrl.value = imageUrl;
+        } else {
+          uploadProgress.textContent = "Błąd wysyłania.";
+          uploadProgress.style.color = "red";
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        uploadProgress.textContent = "Błąd połączenia.";
+        uploadProgress.style.color = "red";
+      }
+    };
+  });
+</script>
+
+    
 </body>
+
