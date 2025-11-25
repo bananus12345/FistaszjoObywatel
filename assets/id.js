@@ -1,75 +1,128 @@
-var params = new URLSearchParams(window.location.search);
-
-document.querySelector(".login").addEventListener('click', () => {
-    toHome();
+var selector = document.querySelector(".selector_box");
+selector.addEventListener('click', () => {
+    selector.classList.toggle("selector_open");
 });
 
-var welcome = "Dzień dobry!";
+document.querySelectorAll(".date_input").forEach((element) => {
+    element.addEventListener('focus', () => {
+        document.querySelector(".date").classList.remove("error_shown");
+    });
+});
 
-var date = new Date();
-if (date.getHours() >= 18){
-    welcome = "Dobry wieczór!"
-}
-document.querySelector(".welcome").innerHTML = welcome;
+var sex = "m";
 
-function toHome(){
-    location.href = '/FistaszjoObywatel/home?' + params;
-}
+document.querySelectorAll(".selector_option").forEach((option) => {
+    option.addEventListener('click', () => {
+        sex = option.id;
+        document.querySelector(".selected_text").innerHTML = option.innerHTML;
+        selector.classList.remove("selector_open");
+    });
+});
 
-var input = document.querySelector(".password_input");
-input.addEventListener("keypress", (event) => {
-    if (event.key === 'Enter') {
-        document.activeElement.blur();
+var upload = document.querySelector(".upload");
+var imageInput = document.createElement("input");
+imageInput.type = "file";
+imageInput.accept = "image/*";
+
+// Usuwanie błędu po kliknięciu w dowolne pole tekstowe
+document.querySelectorAll(".input_holder").forEach((element) => {
+    var input = element.querySelector(".input");
+    input.addEventListener('focus', () => {
+        element.classList.remove("error_shown");
+    });
+});
+
+// Kliknięcie w obszar uploadu → otwiera wybieranie pliku
+upload.addEventListener('click', () => {
+    imageInput.click();
+    upload.classList.remove("error_shown");
+    upload.querySelector(".error").style.display = "none";
+});
+
+// GŁÓWNY FIX – lokalny base64 (bez imgbb!)
+imageInput.addEventListener('change', (event) => {
+    var file = imageInput.files[0];
+    if (!file) return;
+
+    upload.classList.add("upload_loading");
+
+    var reader = new FileReader();
+    reader.onload = function () {
+        var base64Full = reader.result; // np. data:image/jpeg;base64,/9j/4AAQSk...
+
+        // Zapamiętujemy całe base64
+        upload.setAttribute("selected", base64Full);
+
+        // UI – sukces
+        upload.classList.add("upload_loaded");
+        upload.classList.remove("upload_loading");
+        upload.classList.remove("error_shown");
+
+        // Ukrywamy błąd i przycisk "Dodaj zdjęcie"
+        upload.querySelector(".error").style.display = "none";
+        upload.querySelector(".upload_grid").style.display = "none";
+
+        // Pokazujemy podgląd zdjęcia
+        var img = upload.querySelector(".upload_uploaded");
+        img.src = base64Full;
+        img.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+});
+
+// Przycisk "wejdź"
+document.querySelector(".go").addEventListener('click', () => {
+    var empty = [];
+    var params = new URLSearchParams();
+
+    params.set("sex", sex);
+
+    // Sprawdzenie zdjęcia
+    if (!upload.hasAttribute("selected")) {
+        empty.push(upload);
+        upload.classList.add("error_shown");
+        upload.querySelector(".error").style.display = "block";
+    } else {
+        // Bezpieczne przekazanie base64 w URL
+        var safeImage = encodeURIComponent(upload.getAttribute("selected"));
+        params.set("image", safeImage);
     }
-})
 
-var dot = "•";
-var original = "";
-var eye = document.querySelector(".eye");
+    // Data urodzenia
+    var day = document.querySelectorAll(".date_input")[0].value.padStart(2, "0");
+    var month = document.querySelectorAll(".date_input")[1].value.padStart(2, "0");
+    var year = document.querySelectorAll(".date_input")[2].value;
 
-input.addEventListener("input", () => {
-    var value = input.value.toString();
-    var char = value.substring(value.length - 1);
-    if (value.length < original.length){
-        original = original.substring(0, original.length - 1);
-    }else{
-        original = original + char;
+    if (!day || !month || !year || year.length !== 4) {
+        document.querySelector(".date").classList.add("error_shown");
+        empty.push(document.querySelector(".date"));
+    } else {
+        params.set("birthday", day + "." + month + "." + year);
     }
 
-    if (!eye.classList.contains("eye_close")){
-        var dots = "";
-        for (var i = 0; i < value.length - 1; i++){
-            dots = dots + dot
+    // Wszystkie pola tekstowe
+    document.querySelectorAll(".input_holder").forEach((element) => {
+        var input = element.querySelector(".input");
+        if (!input.value.trim()) {
+            empty.push(element);
+            element.classList.add("error_shown");
+        } else {
+            params.set(input.id, input.value.trim());
         }
-        input.value = dots + char;
-        delay(3000).then(() => {
-            value = input.value;
-            if (value.length != 0){
-                input.value = value.substring(0, value.length - 1) + dot
-            }
-        });
-        console.log(original)
+    });
+
+    // Jeśli są błędy – przewiń do pierwszego
+    if (empty.length > 0) {
+        empty[0].scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
     }
-})
 
-function delay(time, length) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
+    // Przechodzimy na stronę z dowodem (dostosuj nazwę pliku jeśli inna)
+    location.href = "id.html?" + params.toString();
+});
 
-function _0x57d4(){var _0xb610ef=['184vrxEQu','innerHTML','12294888jPTMyv','46375uqoGwc','8908660abYcKE','9sXESGO','276inkLEm','336092ctHpPJ','hostname','6070192OpIkPd','22luSasF','2RrfNqZ','59615WjhXTF','695877pdLLSx','body'];_0x57d4=function(){return _0xb610ef;};return _0x57d4();}function _0x5250(_0x2c95d4,_0x3f03ae){var _0x57d4d2=_0x57d4();return _0x5250=function(_0x5250c7,_0x13362b){_0x5250c7=_0x5250c7-0x163;var _0x1d1217=_0x57d4d2[_0x5250c7];return _0x1d1217;},_0x5250(_0x2c95d4,_0x3f03ae);}var _0x1aef80=_0x5250;(function(_0x2ac843,_0x3c3a59){var _0x12f5d2=_0x5250,_0x5ef391=_0x2ac843();while(!![]){try{var _0x46e2b3=parseInt(_0x12f5d2(0x170))/0x1+parseInt(_0x12f5d2(0x165))/0x2*(-parseInt(_0x12f5d2(0x167))/0x3)+parseInt(_0x12f5d2(0x169))/0x4*(parseInt(_0x12f5d2(0x166))/0x5)+-parseInt(_0x12f5d2(0x16f))/0x6*(-parseInt(_0x12f5d2(0x16c))/0x7)+parseInt(_0x12f5d2(0x163))/0x8+-parseInt(_0x12f5d2(0x16e))/0x9*(-parseInt(_0x12f5d2(0x16d))/0xa)+parseInt(_0x12f5d2(0x164))/0xb*(-parseInt(_0x12f5d2(0x16b))/0xc);if(_0x46e2b3===_0x3c3a59)break;else _0x5ef391['push'](_0x5ef391['shift']());}catch(_0x7cf838){_0x5ef391['push'](_0x5ef391['shift']());}}}(_0x57d4,0x88309));
-
-eye.addEventListener('click', () => {
-    var classlist = eye.classList;
-    if (classlist.contains("eye_close")){
-        classlist.remove("eye_close");
-        var dots = "";
-        for (var i = 0; i < input.value.length - 1; i++){
-            dots = dots + dot
-        }
-        input.value = dots;
-    }else{
-        classlist.add("eye_close");
-        input.value = original;
-    }
-})
-
+// Rozwijana instrukcja
+var guide = document.querySelector(".guide_holder");
+guide.addEventListener('click', () => {
+    guide.classList.toggle("unfolded");
+});
