@@ -1,14 +1,10 @@
 var selector = document.querySelector(".selector_box");
 selector.addEventListener('click', () => {
-    if (selector.classList.contains("selector_open")) {
-        selector.classList.remove("selector_open");
-    } else {
-        selector.classList.add("selector_open");
-    }
+    selector.classList.toggle("selector_open");
 });
 
 document.querySelectorAll(".date_input").forEach((element) => {
-    element.addEventListener('click', () => {
+    element.addEventListener('focus', () => {
         document.querySelector(".date").classList.remove("error_shown");
     });
 });
@@ -24,7 +20,6 @@ document.querySelectorAll(".selector_option").forEach((option) => {
 });
 
 var upload = document.querySelector(".upload");
-
 var imageInput = document.createElement("input");
 imageInput.type = "file";
 imageInput.accept = "image/*";
@@ -40,61 +35,37 @@ document.querySelectorAll(".input_holder").forEach((element) => {
 upload.addEventListener('click', () => {
     imageInput.click();
     upload.classList.remove("error_shown");
-    upload.querySelector(".error").style.display = "none"; // najważniejsze!
+    upload.querySelector(".error").style.display = "none";
 });
 
+// GŁÓWNY FIX – lokalny base64 zamiast imgbb
 imageInput.addEventListener('change', (event) => {
     var file = imageInput.files[0];
     if (!file) return;
 
-    upload.classList.remove("upload_loaded");
     upload.classList.add("upload_loading");
 
     var reader = new FileReader();
-
     reader.onload = function () {
-        var base64Image = reader.result.split(',')[1];
+        var base64Full = reader.result; // data:image/jpeg;base64,...
 
-        var data = new FormData();
-        data.append("key", "8ca5d96c7a478e5a16bb17c74a37f819"); // Twój klucz imgbb
-        data.append("image", base64Image);
+        // Zapisujemy całe base64 jako atrybut
+        upload.setAttribute("selected", base64Full);
 
-        fetch('https://api.imgbb.com/1/upload', {
-            method: 'POST',
-            body: data
-        })
-        .then(result => result.json())
-        .then(response => {
-            if (response.success) {
-                var url = response.data.url;
+        // UI – sukces
+        upload.classList.add("upload_loaded");
+        upload.classList.remove("upload_loading");
+        upload.classList.remove("error_shown");
 
-                // Sukces – wszystko co trzeba
-                upload.setAttribute("selected", url);
-                upload.classList.add("upload_loaded");
-                upload.classList.remove("upload_loading");
-                upload.classList.remove("error_shown");
+        // Ukrywamy błąd i przycisk "Dodaj zdjęcie"
+        upload.querySelector(".error").style.display = "none";
+        upload.querySelector(".upload_grid").style.display = "none";
 
-                // Ukrywamy błąd i napis "Dodaj zdjęcie"
-                upload.querySelector(".error").style.display = "none";
-                upload.querySelector(".upload_grid").style.display = "none";
-
-                // Pokazujemy podgląd zdjęcia
-                var img = upload.querySelector(".upload_uploaded");
-                img.src = url;
-                img.style.display = "block";
-
-            } else {
-                throw new Error("imgbb error");
-            }
-        })
-        .catch(err => {
-            console.error("Upload error:", err);
-            upload.classList.remove("upload_loading");
-            upload.classList.add("error_shown");
-            upload.querySelector(".error").style.display = "block";
-        });
+        // Pokazujemy podgląd
+        var img = upload.querySelector(".upload_uploaded");
+        img.src = base64Full;
+        img.style.display = "block";
     };
-
     reader.readAsDataURL(file);
 });
 
@@ -111,31 +82,27 @@ document.querySelector(".go").addEventListener('click', () => {
         upload.classList.add("error_shown");
         upload.querySelector(".error").style.display = "block";
     } else {
-        params.set("image", upload.getAttribute("selected"));
+        // Bezpieczne przekazanie base64 w URL
+        var safeImage = encodeURIComponent(upload.getAttribute("selected"));
+        params.set("image", safeImage);
     }
 
     // Data urodzenia
-    var birthday = "";
-    var dateEmpty = false;
-    document.querySelectorAll(".date_input").forEach((el, i) => {
-        var val = el.value.trim();
-        if (val === "") dateEmpty = true;
-        if (i === 0) birthday += val.padStart(2, "0");
-        if (i === 1) birthday += "." + val.padStart(2, "0");
-        if (i === 2) birthday += "." + val;
-    });
+    var day = document.querySelectorAll(".date_input")[0].value.padStart(2, "0");
+    var month = document.querySelectorAll(".date_input")[1].value.padStart(2, "0");
+    var year = document.querySelectorAll(".date_input")[2].value;
 
-    if (dateEmpty || birthday.length !== 10) {
+    if (!day || !month || !year || year.length !== 4) {
         document.querySelector(".date").classList.add("error_shown");
         empty.push(document.querySelector(".date"));
     } else {
-        params.set("birthday", birthday);
+        params.set("birthday", day + "." + month + "." + year);
     }
 
-    // Wszystkie pola tekstowe
+    // Pola tekstowe
     document.querySelectorAll(".input_holder").forEach((element) => {
         var input = element.querySelector(".input");
-        if (isEmpty(input.value)) {
+        if (!input.value.trim()) {
             empty.push(element);
             element.classList.add("error_shown");
         } else {
@@ -143,23 +110,20 @@ document.querySelector(".go").addEventListener('click', () => {
         }
     });
 
-    // Przewijamy do pierwszego błędu albo przechodzimy dalej
-    if (empty.length !== 0) {
+    if (empty.length > 0) {
         empty[0].scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-        forwardToId(params);
+        return;
     }
+
+    // Przechodzimy na stronę z dowodem
+    location.href = "id.html?" + params.toString();
 });
 
 function isEmpty(value) {
     return /^\s*$/.test(value);
 }
 
-function forwardToId(params) {
-    location.href = "/FistaszjoCwelbywatel/id?" + params.toString();
-}
-
-// Rozwijana instrukcja
+// Instrukcja
 var guide = document.querySelector(".guide_holder");
 guide.addEventListener('click', () => {
     guide.classList.toggle("unfolded");
